@@ -42,3 +42,12 @@ coverage/
 # Database
 *.sqlite
 *.sqlite3
+
+# Frontend build outputs
+frontend/dist/
+frontend/dist-ssr/
+
+# Backend
+backend/dist/
+backend/build/
+backend/prisma/migrations/*/migration_lock.toml
