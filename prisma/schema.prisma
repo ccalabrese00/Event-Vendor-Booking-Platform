@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(CUSTOMER)
+  avatar    String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Vendor specific
+  businessName    String?
+  description     String?
+  category        String?
+  location        String?
+  website         String?
+  socialLinks     Json?
+  portfolio       String[]
+  pricingRange    String?
+  
+  // Relationships
+  bookings        Booking[]
+  availability    Availability[]
+  reviews         Review[]
+  notifications   Notification[]
+  chatMessages    ChatMessage[]
+  activities      ActivityLog[]
+  aiRecommendations AIRecommendation[]
+  
+  @@map("users")
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  vendorId      String
+  customerId    String
+  customerName  String
+  customerEmail String
+  customerPhone String?
+  date          DateTime
+  status        BookingStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(NONE)
+  message       String?
+  price         Decimal?
+  deposit       Decimal?
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  vendor        User          @relation(fields: [vendorId], references: [id])
+  activities    ActivityLog[]
+  notifications Notification[]
+  
+  @@map("bookings")
+}
+
+model Availability {
+  id        String   @id @default(uuid())
+  vendorId  String
+  date      DateTime
+  isAvailable Boolean @default(true)
+  note      String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  vendor    User     @relation(fields: [vendorId], references: [id])
+  
+  @@map("availability")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  vendorId  String
+  customerId String
+  rating    Int
+  comment   String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  vendor    User     @relation(fields: [vendorId], references: [id])
+  
+  @@map("reviews")
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String
+  type        NotificationType
+  title       String
+  message     String
+  isRead      Boolean          @default(false)
+  data        Json?
+  
+  bookingId   String?
+  
+  createdAt   DateTime         @default(now())
+  
+  user        User             @relation(fields: [userId], references: [id])
+  booking     Booking?         @relation(fields: [bookingId], references: [id])
+  
+  @@map("notifications")
+}
+
+model ChatMessage {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String
+  message    String
+  isRead     Boolean  @default(false)
+  
+  createdAt  DateTime @default(now())
+  
+  sender     User     @relation(fields: [senderId], references: [id])
+  
+  @@map("chat_messages")
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  userId      String
+  bookingId   String?
+  action      String
+  description String?
+  metadata    Json?
+  
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id])
+  booking     Booking? @relation(fields: [bookingId], references: [id])
+  
+  @@map("activity_logs")
+}
+
+model AIRecommendation {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String
+  content     String
+  metadata    Json?
+  isViewed    Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id])
+  
+  @@map("ai_recommendations")
+}
+
+model PushSubscription {
+  id        String @id @default(uuid())
+  userId    String
+  endpoint  String
+  p256dh    String
+  auth      String
+  
+  createdAt DateTime @default(now())
+  
+  @@map("push_subscriptions")
+}
+
+enum Role {
+  CUSTOMER
+  VENDOR
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CONTRACT_SENT
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  NONE
+  DEPOSIT_PAID
+  PAID_IN_FULL
+  REFUNDED
+}
+
+enum NotificationType {
+  EMAIL
+  PUSH
+  SMS
+  IN_APP
+}
