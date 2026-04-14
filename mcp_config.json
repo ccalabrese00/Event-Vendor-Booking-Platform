@@ -9,7 +9,7 @@
       "command": "npx",
       "args": ["-y", "figma-developer-mcp"],
       "env": {
-        "FIGMA_API_KEY": "YOUR_FIGMA_API_KEY_HERE"
+        "FIGMA_API_KEY": "YOUR_FIGMA_TOKEN_HERE"
       }
     }
   }
