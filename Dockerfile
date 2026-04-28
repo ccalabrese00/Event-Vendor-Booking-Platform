@@ -14,7 +14,7 @@ COPY backend/jest.config.js ./
 COPY prisma/ ./prisma/
 
 # Install dependencies and build
-RUN npm ci
+RUN npm install
 RUN npm run build
 
 # Production stage
