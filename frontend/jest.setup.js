@@ -1,27 +1,3 @@
-<<<<<<< HEAD
-import '@testing-library/jest-dom';
-
-// Mock next/router
-jest.mock('next/router', () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-    replace: jest.fn(),
-    prefetch: jest.fn(),
-    query: {},
-    pathname: '/',
-  }),
-}));
-
-// Mock next/navigation
-jest.mock('next/navigation', () => ({
-  useParams: () => ({}),
-  useRouter: () => ({
-    push: jest.fn(),
-    replace: jest.fn(),
-  }),
-  usePathname: () => '/',
-}));
-=======
 import '@testing-library/jest-dom'
 
 // Mock Next.js router
@@ -58,7 +34,6 @@ jest.mock('next/head', () => {
     },
   }
 })
->>>>>>> 3f8a844 (Complete backend API implementation with AWS deployment setup)
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -73,9 +48,6 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
-<<<<<<< HEAD
-});
-=======
 })
 
 // Mock IntersectionObserver
@@ -107,4 +79,3 @@ Object.defineProperty(window, 'ResizeObserver', {
   writable: true,
   value: MockResizeObserver,
 })
->>>>>>> 3f8a844 (Complete backend API implementation with AWS deployment setup)
