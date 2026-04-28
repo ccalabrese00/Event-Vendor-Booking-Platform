@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "event-vendor-booking-platform",
   "version": "1.0.0",
   "description": "Event Vendor Booking Platform with AI integrations and advanced features",
@@ -71,5 +72,12 @@
     "@testing-library/jest-dom": "^6.1.5",
     "eslint": "^8.54.0",
     "eslint-config-next": "^14.0.3"
+=======
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
+>>>>>>> 3f8a844 (Complete backend API implementation with AWS deployment setup)
   }
 }

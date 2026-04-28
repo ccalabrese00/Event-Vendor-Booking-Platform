@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -12,7 +12,7 @@ model User {
   email     String   @unique
   password  String
   name      String
-  role      Role     @default(CUSTOMER)
+  role      String   @default("CUSTOMER")
   avatar    String?
   phone     String?
   createdAt DateTime @default(now())
@@ -24,8 +24,8 @@ model User {
   category        String?
   location        String?
   website         String?
-  socialLinks     Json?
-  portfolio       String[]
+  socialLinks     String?
+  portfolio     String?
   pricingRange    String?
   
   // Relationships
@@ -48,11 +48,11 @@ model Booking {
   customerEmail String
   customerPhone String?
   date          DateTime
-  status        BookingStatus @default(PENDING)
-  paymentStatus PaymentStatus @default(NONE)
+  status        String   @default("PENDING")
+  paymentStatus String   @default("NONE")
   message       String?
-  price         Decimal?
-  deposit       Decimal?
+  price         Float?
+  deposit       Float?
   
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -97,11 +97,11 @@ model Review {
 model Notification {
   id          String           @id @default(uuid())
   userId      String
-  type        NotificationType
+  type        String
   title       String
   message     String
   isRead      Boolean          @default(false)
-  data        Json?
+  data        String?
   
   bookingId   String?
   
@@ -133,7 +133,7 @@ model ActivityLog {
   bookingId   String?
   action      String
   description String?
-  metadata    Json?
+  metadata    String?
   
   createdAt   DateTime @default(now())
   
@@ -148,7 +148,7 @@ model AIRecommendation {
   userId      String
   type        String
   content     String
-  metadata    Json?
+  metadata    String?
   isViewed    Boolean  @default(false)
   
   createdAt   DateTime @default(now())
@@ -170,32 +170,8 @@ model PushSubscription {
   @@map("push_subscriptions")
 }
 
-enum Role {
-  CUSTOMER
-  VENDOR
-  ADMIN
-}
-
-enum BookingStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-  CONTRACT_SENT
-  CONFIRMED
-  COMPLETED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  NONE
-  DEPOSIT_PAID
-  PAID_IN_FULL
-  REFUNDED
-}
-
-enum NotificationType {
-  EMAIL
-  PUSH
-  SMS
-  IN_APP
-}
+// Enums replaced with Strings for SQLite compatibility
+// Role: CUSTOMER, VENDOR, ADMIN
+// BookingStatus: PENDING, ACCEPTED, DECLINED, CONTRACT_SENT, CONFIRMED, COMPLETED, CANCELLED
+// PaymentStatus: NONE, DEPOSIT_PAID, PAID_IN_FULL, REFUNDED
+// NotificationType: EMAIL, PUSH, SMS, IN_APP

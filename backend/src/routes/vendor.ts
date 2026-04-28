@@ -7,9 +7,9 @@ const router = Router()
 
 const profileSchema = z.object({
   name: z.string().min(2).optional(),
-  bio: z.string().max(500).optional(),
+  description: z.string().max(500).optional(),
   category: z.string().optional(),
-  pricing: z.string().optional()
+  pricingRange: z.string().optional()
 })
 
 // Get current vendor profile
@@ -23,9 +23,9 @@ router.get('/profile', authenticate, async (req: AuthRequest, res) => {
         name: true,
         role: true,
         avatar: true,
-        bio: true,
+        description: true,
         category: true,
-        pricing: true,
+        pricingRange: true,
         createdAt: true
       }
     })
@@ -55,9 +55,9 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
         name: true,
         role: true,
         avatar: true,
-        bio: true,
+        description: true,
         category: true,
-        pricing: true,
+        pricingRange: true,
         updatedAt: true
       }
     })
@@ -104,7 +104,7 @@ router.get('/search', async (req, res) => {
     if (search && typeof search === 'string') {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { bio: { contains: search, mode: 'insensitive' } }
+        { description: { contains: search, mode: 'insensitive' } }
       ]
     }
     
@@ -113,9 +113,9 @@ router.get('/search', async (req, res) => {
       select: {
         id: true,
         name: true,
-        bio: true,
+        description: true,
         category: true,
-        pricing: true,
+        pricingRange: true,
         avatar: true,
         createdAt: true,
         _count: {
@@ -135,11 +135,11 @@ router.get('/search', async (req, res) => {
     let filteredVendors = vendors
     if (available === 'true') {
       const vendorsWithAvailability = await Promise.all(
-        vendors.map(async (vendor: { id: string; _count: { bookings: number } }) => {
+        vendors.map(async (vendor: typeof vendors[0] & { availCount?: number }) => {
           const availCount = await prisma.availability.count({
             where: {
               vendorId: vendor.id,
-              status: 'AVAILABLE',
+              isAvailable: true,
               date: { gte: new Date() }
             }
           })
@@ -150,9 +150,10 @@ router.get('/search', async (req, res) => {
     }
     
     res.json({ 
-      vendors: filteredVendors.map((v: { id: string; _count: { bookings: number }; availCount?: number }) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      vendors: filteredVendors.map((v: any) => ({
         ...v,
-        completedBookings: v._count.bookings,
+        completedBookings: v._count?.bookings || 0,
         _count: undefined
       }))
     })
@@ -174,21 +175,21 @@ router.get('/:id/profile', async (req, res) => {
       select: {
         id: true,
         name: true,
-        bio: true,
+        description: true,
         category: true,
-        pricing: true,
+        pricingRange: true,
         avatar: true,
         createdAt: true,
         availability: {
           where: {
-            status: { in: ['AVAILABLE', 'BOOKED'] },
+            isAvailable: true,
             date: { gte: new Date() }
           },
           orderBy: { date: 'asc' },
           take: 30,
           select: {
             date: true,
-            status: true
+            isAvailable: true
           }
         },
         _count: {
@@ -208,10 +209,12 @@ router.get('/:id/profile', async (req, res) => {
       return
     }
     
+    const vendorWithCount = vendor as typeof vendor & { _count?: { bookings: number } };
+    
     res.json({ 
       vendor: {
-        ...vendor,
-        completedBookings: vendor._count.bookings,
+        ...vendorWithCount,
+        completedBookings: vendorWithCount._count?.bookings || 0,
         _count: undefined
       }
     })
