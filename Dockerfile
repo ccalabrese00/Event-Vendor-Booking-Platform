@@ -8,10 +8,10 @@ WORKDIR /app
 # Copy backend package files
 COPY backend/package*.json ./
 COPY backend/lib/ ./lib/
-COPY backend/prisma/ ./prisma/
 COPY backend/src/ ./src/
 COPY backend/tsconfig.json ./
 COPY backend/jest.config.js ./
+COPY prisma/ ./prisma/
 
 # Install dependencies and build
 RUN npm ci
