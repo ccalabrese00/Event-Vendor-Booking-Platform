@@ -2,9 +2,8 @@ name: Deploy to AWS
 
 on:
   push:
-    branches: [ main, features ]
-  pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 env:
   AWS_REGION: us-east-1
@@ -35,6 +34,17 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
+    - name: Setup Node.js for Prisma
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies and generate Prisma client
+      run: |
+        cd backend
+        npm ci
+        npx prisma generate --schema=../prisma/schema.prisma
+
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
@@ -43,6 +53,8 @@ jobs:
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
     - name: Fill in the new image ID in the Amazon ECS task definition
@@ -60,3 +72,8 @@ jobs:
         service: ${{ env.ECS_SERVICE }}
         cluster: ${{ env.ECS_CLUSTER }}
         wait-for-service-stability: true
+
+    - name: Cleanup old images in ECR (keep last 10)
+      run: |
+        aws ecr describe-images --repository-name $ECR_REPOSITORY --region $AWS_REGION --query 'sort_by(imageDetails,& imagePushedAt)[*].imageDigest' --output text | tr '\t' '\n' | head -n -10 | xargs -I {} aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --region $AWS_REGION --image-ids imageDigest={} || true
+      continue-on-error: true
