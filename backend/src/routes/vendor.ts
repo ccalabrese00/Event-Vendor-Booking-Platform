@@ -135,7 +135,7 @@ router.get('/search', async (req, res) => {
     let filteredVendors = vendors
     if (available === 'true') {
       const vendorsWithAvailability = await Promise.all(
-        vendors.map(async (vendor) => {
+        vendors.map(async (vendor: { id: string; _count: { bookings: number } }) => {
           const availCount = await prisma.availability.count({
             where: {
               vendorId: vendor.id,
@@ -150,7 +150,7 @@ router.get('/search', async (req, res) => {
     }
     
     res.json({ 
-      vendors: filteredVendors.map(v => ({
+      vendors: filteredVendors.map((v: { id: string; _count: { bookings: number }; availCount?: number }) => ({
         ...v,
         completedBookings: v._count.bookings,
         _count: undefined

@@ -7,13 +7,7 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  logger.error({
-    error: err.message,
-    stack: err.stack,
-    url: req.url,
-    method: req.method,
-    ip: req.ip,
-  }, 'Unhandled error');
+  logger.error(`Error: ${err.message}, URL: ${req.url}, Method: ${req.method}, IP: ${req.ip}`);
 
   const isDev = process.env.NODE_ENV !== 'production';
   
