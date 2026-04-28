@@ -1,48 +1,52 @@
-# Multi-stage build for production
+# Backend API Dockerfile for ECS
 FROM node:18-alpine AS base
 
 # Install dependencies
 RUN apk add --no-cache libc6-compat curl
 WORKDIR /app
 
-# Dependencies stage
-FROM base AS deps
-COPY package*.json ./
-COPY backend/package*.json ./backend/
-COPY frontend/package*.json ./frontend/
-RUN npm ci --only=production
+# Copy backend package files
+COPY backend/package*.json ./
+COPY backend/lib/ ./lib/
+COPY backend/prisma/ ./prisma/
+COPY backend/src/ ./src/
+COPY backend/tsconfig.json ./
+COPY backend/jest.config.js ./
 
-# Build stage
-FROM base AS builder
-COPY . .
+# Install dependencies and build
 RUN npm ci
 RUN npm run build
 
 # Production stage
-FROM base AS runner
+FROM node:18-alpine AS runner
 ENV NODE_ENV=production
+
+WORKDIR /app
 
 # Create logs directory
 RUN mkdir -p /app/logs
 
 # Copy built application
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/frontend/.next ./frontend/.next
-COPY --from=builder /app/frontend/public ./frontend/public
-COPY package*.json ./
+COPY --from=base /app/package*.json ./
+COPY --from=base /app/dist ./dist
+COPY --from=base /app/lib ./lib
+COPY --from=base /app/node_modules ./node_modules
+COPY --from=base /app/prisma ./prisma
+
+# Generate Prisma client
+RUN npx prisma generate
 
 # Security: run as non-root user
 RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-RUN chown -R nextjs:nodejs /app/logs
-USER nextjs
+RUN adduser --system --uid 1001 nodejs
+RUN chown -R nodejs:nodejs /app/logs /app
+USER nodejs
 
-EXPOSE 3000 3001
+EXPOSE 3001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:3001/api/health || exit 1
 
-# Start both frontend and backend
-CMD ["sh", "-c", "npm run start:backend & npm run start:frontend"]
+# Start backend
+CMD ["node", "dist/index.js"]
