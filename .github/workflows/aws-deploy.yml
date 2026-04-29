@@ -34,17 +34,6 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Setup Node.js for Prisma
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-
-    - name: Install dependencies and generate Prisma client
-      run: |
-        cd backend
-        npm ci
-        npx prisma generate --schema=../prisma/schema.prisma
-
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
