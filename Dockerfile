@@ -13,12 +13,13 @@ RUN echo "=== Starting npm install ===" && npm install && echo "=== npm install 
 # Copy prisma schema and generate client
 COPY prisma/ ./prisma/
 RUN echo "=== Prisma files copied ===" && ls -la prisma/
-RUN echo "=== Starting prisma generate ===" && npx prisma generate && echo "=== prisma generate completed ==="
+RUN echo "=== Starting prisma generate ===" && npx prisma generate --schema=./prisma/schema.prisma && echo "=== prisma generate completed ==="
 
-# Copy backend source
+# Copy backend source and lib
 COPY backend/src ./src
+COPY backend/lib ./lib
 COPY backend/tsconfig.json ./
-RUN echo "=== Source files copied ===" && ls -la src/
+RUN echo "=== Source files copied ===" && ls -la src/ && ls -la lib/
 
 # Build the application
 RUN echo "=== Starting npm run build ===" && npm run build && echo "=== Build completed ==="

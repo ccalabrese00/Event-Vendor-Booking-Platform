@@ -84,7 +84,7 @@ router.get('/stats', authenticate, requireRole(['VENDOR']), async (req: AuthRequ
         completedBookings,
         cancelledBookings,
         conversionRate: Math.round(conversionRate * 100) / 100,
-        monthlyRevenue: monthlyRevenue._sum?.price?.toNumber() || 0,
+        monthlyRevenue: monthlyRevenue._sum?.price || 0,
       },
       recentBookings,
       upcomingEvents,
@@ -131,11 +131,11 @@ router.get('/revenue', authenticate, requireRole(['VENDOR']), async (req: AuthRe
       revenueByMonth.set(monthKey, { revenue: 0, bookings: 0 });
     }
 
-    bookings.forEach((booking: { updatedAt: Date; price: { toNumber: () => number } | null }) => {
+    bookings.forEach((booking: { updatedAt: Date; price: number | null }) => {
       const monthKey = booking.updatedAt.toLocaleString('default', { month: 'short' });
       const current = revenueByMonth.get(monthKey) || { revenue: 0, bookings: 0 };
       revenueByMonth.set(monthKey, {
-        revenue: current.revenue + (booking.price?.toNumber() || 0),
+        revenue: current.revenue + (booking.price || 0),
         bookings: current.bookings + 1,
       });
     });
