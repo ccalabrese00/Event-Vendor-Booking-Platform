@@ -5,20 +5,23 @@ WORKDIR /app
 
 # Copy backend package files first
 COPY backend/package*.json ./
+RUN echo "=== Package files copied ===" && ls -la
 
 # Install all dependencies (including devDependencies for build)
-RUN npm install
+RUN echo "=== Starting npm install ===" && npm install && echo "=== npm install completed ==="
 
 # Copy prisma schema and generate client
 COPY prisma/ ./prisma/
-RUN npx prisma generate
+RUN echo "=== Prisma files copied ===" && ls -la prisma/
+RUN echo "=== Starting prisma generate ===" && npx prisma generate && echo "=== prisma generate completed ==="
 
 # Copy backend source
 COPY backend/src ./src
 COPY backend/tsconfig.json ./
+RUN echo "=== Source files copied ===" && ls -la src/
 
 # Build the application
-RUN npm run build
+RUN echo "=== Starting npm run build ===" && npm run build && echo "=== Build completed ==="
 
 # Set environment
 ENV NODE_ENV=production
