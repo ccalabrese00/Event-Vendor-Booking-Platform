@@ -1,30 +1,24 @@
-# Backend-only Dockerfile for faster deployment
-FROM node:18-alpine AS builder
+# Backend-only Dockerfile for AWS deployment
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy backend package files
+# Copy backend package files first
 COPY backend/package*.json ./
-RUN npm install
+
+# Install all dependencies (including devDependencies for build)
+RUN npm ci
 
 # Copy prisma schema and generate client
 COPY prisma/ ./prisma/
 RUN npx prisma generate
 
-# Copy backend source and build
-COPY backend/ ./
+# Copy backend source
+COPY backend/src ./src
+COPY backend/tsconfig.json ./
+
+# Build the application
 RUN npm run build
-
-# Production stage
-FROM node:18-alpine AS production
-
-WORKDIR /app
-
-# Copy built application
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/prisma ./prisma
 
 # Set environment
 ENV NODE_ENV=production
