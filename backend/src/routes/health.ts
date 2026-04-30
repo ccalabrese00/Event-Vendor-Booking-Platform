@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { logger } from '../../lib/logger';
 import { prisma } from '../utils/prisma';
 
 const router = Router();
@@ -27,7 +26,7 @@ router.get('/detailed', async (req, res) => {
     await prisma.$queryRaw`SELECT 1`;
     checks.database = true;
   } catch (error) {
-    logger.error('Database health check failed', error);
+    console.error('Database health check failed:', error);
   }
 
   // Memory check (< 90% usage)
