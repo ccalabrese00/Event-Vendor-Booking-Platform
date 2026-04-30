@@ -15,9 +15,9 @@ COPY prisma/ ./prisma/
 RUN echo "=== Prisma files copied ===" && ls -la prisma/
 RUN echo "=== Starting prisma generate ===" && npx prisma generate --schema=./prisma/schema.prisma && echo "=== prisma generate completed ==="
 
-# Copy backend source and lib
+# Copy backend source and lib (from root)
 COPY backend/src ./src
-COPY backend/lib ./lib
+COPY lib ./lib
 COPY backend/tsconfig.json ./
 RUN echo "=== Source files copied ===" && ls -la src/ && ls -la lib/
 
